@@ -7,10 +7,13 @@ enum GrammarElements {
     Term,
 }
 
-fn main() -> Result<(), String> {
-    for variant in GrammarElements::enumerate_variants() {
-        println!("{:?}", variant);
-    }
-
-    Ok(())
+fn main() {
+    assert_eq!(
+        GrammarElements::enumerate_variants().collect::<Vec<_>>(),
+        vec![
+            GrammarElements::Expr,
+            GrammarElements::Factor,
+            GrammarElements::Term,
+        ]
+    )
 }

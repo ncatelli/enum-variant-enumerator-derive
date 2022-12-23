@@ -4,7 +4,6 @@ use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use syn::{parse_macro_input, spanned::Spanned, Data, DataEnum, DeriveInput, Fields, Ident};
 
-/// Stores all metadata necessary for a given Ident.
 struct VariantMetadata {
     _span: Span,
     ident: Ident,
@@ -22,12 +21,11 @@ impl From<VariantMetadata> for Ident {
     }
 }
 
-/// Stores the enum and its metadata for generating the tokenizer for each
-/// variant.
 struct Variants {
     _span: Span,
-    /// Represents the Identifier for the Token enum.
+    /// Represents the Identifier for the enum.
     enum_ident: Ident,
+    // Contains all metadata around each enum variant.
     variant_metadata: Vec<VariantMetadata>,
 }
 
@@ -54,7 +52,6 @@ fn parse(input: DeriveInput) -> Result<Variants, syn::Error> {
         }
     };
 
-    // token enum variants with their tokenizer metadata parsed.
     enum_variants
         .into_iter()
         .map(|variant| {
@@ -81,7 +78,7 @@ fn parse(input: DeriveInput) -> Result<Variants, syn::Error> {
         })
 }
 
-/// Generates a runtime lexer from a set of variants.
+/// Generates an iterator over all variants for an enum.
 fn codegen(variants: Variants) -> syn::Result<TokenStream> {
     let enum_ident = &variants.enum_ident;
     let variant_len = variants.variant_metadata.len();
@@ -105,7 +102,8 @@ fn codegen(variants: Variants) -> syn::Result<TokenStream> {
     Ok(enumerator_stream)
 }
 
-/// The dispatcher method for tokens annotated with the Relex derive.
+/// Parses and generates an ordered iterator over all variants of an enum in
+/// the order that they are defined..
 #[proc_macro_derive(VariantEnumerator)]
 pub fn generate_variant_iter(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
